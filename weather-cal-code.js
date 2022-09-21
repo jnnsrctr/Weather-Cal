@@ -1239,32 +1239,9 @@ const weatherCal = {
       const titleStack = this.align(reminderStack)
       titleStack.layoutHorizontally()
 
-      const title = this.provideText(reminder.title.trim(), titleStack, this.format.reminderTitle)
+      // const title = this.provideText(reminder.title.trim(), titleStack, this.format.reminderTitle)
+      const title = this.provideText("Aramark", titleStack, this.format.reminderTitle)
       titleStack.setPadding(this.padding, this.padding, this.padding/5, this.padding)
-
-      let timeText
-      if (reminderSettings.useRelativeDueDate) {
-        const rdf = new RelativeDateTimeFormatter()
-        rdf.locale = this.locale
-        rdf.useNamedDateTimeStyle()
-        timeText = rdf.string(reminder.dueDate, this.now)
-
-      } else {
-        const df = new DateFormatter()
-        df.locale = this.locale
-
-        if (this.dateDiff(reminder.dueDate, this.now) == 0 && reminder.dueDateIncludesTime) { df.useNoDateStyle() }
-        else { df.useShortDateStyle() }
-
-        if (reminder.dueDateIncludesTime) { df.useShortTimeStyle() }
-        else { df.useNoTimeStyle() }
-
-        timeText = df.string(reminder.dueDate)
-      }
-
-      const timeStack = this.align(reminderStack)
-      //const time = this.provideText(timeText, timeStack, this.format.eventTime)
-      timeStack.setPadding(0, this.padding, this.padding, this.padding)
     }
   },
 
@@ -2348,6 +2325,20 @@ const weatherCal = {
           description: "Set how many minutes before/after sunrise or sunset to show this element. Leave blank to always show.",
         }, 
         separateElements: {
+          val: false,
+          name: "Use separate sunrise and sunset elements",
+          description: "By default, the sunrise element changes between sunrise and sunset times automatically. Set to true for individual, hard-coded sunrise and sunset elements.",
+          type: "bool",
+        },
+      },
+      textx: {
+        name: "TextX",
+        test1: {
+          val: "",
+          name: "Limit times displayed",
+          description: "Set how many minutes before/after sunrise or sunset to show this element. Leave blank to always show.",
+        }, 
+        test2: {
           val: false,
           name: "Use separate sunrise and sunset elements",
           description: "By default, the sunrise element changes between sunrise and sunset times automatically. Set to true for individual, hard-coded sunrise and sunset elements.",
