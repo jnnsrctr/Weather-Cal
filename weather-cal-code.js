@@ -1239,24 +1239,8 @@ const weatherCal = {
       const titleStack = this.align(reminderStack)
       titleStack.layoutHorizontally()
 
-      // TODO: Functionize for events and reminders
-      //if (showListColor.length && showListColor != "none" && !showListColor.includes("right")) {
-      //  let colorItemText = this.provideTextSymbol(colorShape) + " "
-      //  let colorItem = this.provideText(colorItemText, titleStack, this.format.reminderTitle)
-      //  colorItem.textColor = reminder.calendar.color
-      //}
-
       const title = this.provideText(reminder.title.trim(), titleStack, this.format.reminderTitle)
       titleStack.setPadding(this.padding, this.padding, this.padding/5, this.padding)
-
-      if (showListColor.length && showListColor != "none" && showListColor.includes("right")) {
-        let colorItemText = " " + this.provideTextSymbol(colorShape)
-        let colorItem = this.provideText(colorItemText, titleStack, this.format.reminderTitle)
-        colorItem.textColor = reminder.calendar.color
-      }
-
-      if (reminder.isOverdue) { title.textColor = new Color(reminderSettings.overdueColor || "ff3b30") }
-      if (reminder.isOverdue || !reminder.dueDate) { continue }
 
       let timeText
       if (reminderSettings.useRelativeDueDate) {
@@ -1279,7 +1263,7 @@ const weatherCal = {
       }
 
       const timeStack = this.align(reminderStack)
-      const time = this.provideText(timeText, timeStack, this.format.eventTime)
+      //const time = this.provideText(timeText, timeStack, this.format.eventTime)
       timeStack.setPadding(0, this.padding, this.padding, this.padding)
     }
   },
