@@ -1240,11 +1240,11 @@ const weatherCal = {
       titleStack.layoutHorizontally()
 
       // TODO: Functionize for events and reminders
-      if (showListColor.length && showListColor != "none" && !showListColor.includes("right")) {
-        let colorItemText = this.provideTextSymbol(colorShape) + " "
-        let colorItem = this.provideText(colorItemText, titleStack, this.format.reminderTitle)
-        colorItem.textColor = reminder.calendar.color
-      }
+      //if (showListColor.length && showListColor != "none" && !showListColor.includes("right")) {
+      //  let colorItemText = this.provideTextSymbol(colorShape) + " "
+      //  let colorItem = this.provideText(colorItemText, titleStack, this.format.reminderTitle)
+      //  colorItem.textColor = reminder.calendar.color
+      //}
 
       const title = this.provideText(reminder.title.trim(), titleStack, this.format.reminderTitle)
       titleStack.setPadding(this.padding, this.padding, this.padding/5, this.padding)
