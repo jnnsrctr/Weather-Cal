@@ -754,6 +754,7 @@ const weatherCal = {
 
       if (calendars.length && !(calendars.some(a => a.identifier == event.calendar.identifier) || calendars.includes(event.calendar.title))) { return false }
       if (event.title.startsWith("Canceled:")) { return false }
+      if (event.title.startsWith("EOWD")) { return false }
       if (event.isAllDay) { return eventSettings.showAllDay }
 
       // If they leave it blank, set minutes after to the duration of the event
@@ -1103,7 +1104,7 @@ const weatherCal = {
       const title = this.provideText(event.title.trim(), titleStack, this.format.eventTitle)
       const titlePadding = (showLocation || showTime) ? this.padding/5 : this.padding
       titleStack.setPadding(this.padding, this.padding, titlePadding, this.padding)
-      if (this.data.events.length >= 3) { title.lineLimit = 1 } // TODO: Make setting for this
+      if (this.data.events.length >= 1) { title.lineLimit = 1 } // TODO: Make setting for this
 
       if (showCalendarColor.length && showCalendarColor != "none" && showCalendarColor.includes("right")) {
         const colorItemText = " " + this.provideTextSymbol(colorShape)
@@ -1162,6 +1163,77 @@ const weatherCal = {
     const colorShape = showListColor.includes("circle") ? "circle" : "rectangle"
 
     for (let i = 0; i < numberOfReminders; i++) {
+      const reminder = this.data.reminders[i]
+
+      const titleStack = this.align(reminderStack)
+      titleStack.layoutHorizontally()
+
+      // TODO: Functionize for events and reminders
+      if (showListColor.length && showListColor != "none" && !showListColor.includes("right")) {
+        let colorItemText = this.provideTextSymbol(colorShape) + " "
+        let colorItem = this.provideText(colorItemText, titleStack, this.format.reminderTitle)
+        colorItem.textColor = reminder.calendar.color
+      }
+
+      const title = this.provideText(reminder.title.trim(), titleStack, this.format.reminderTitle)
+      titleStack.setPadding(this.padding, this.padding, this.padding/5, this.padding)
+
+      if (showListColor.length && showListColor != "none" && showListColor.includes("right")) {
+        let colorItemText = " " + this.provideTextSymbol(colorShape)
+        let colorItem = this.provideText(colorItemText, titleStack, this.format.reminderTitle)
+        colorItem.textColor = reminder.calendar.color
+      }
+
+      if (reminder.isOverdue) { title.textColor = new Color(reminderSettings.overdueColor || "ff3b30") }
+      if (reminder.isOverdue || !reminder.dueDate) { continue }
+
+      let timeText
+      if (reminderSettings.useRelativeDueDate) {
+        const rdf = new RelativeDateTimeFormatter()
+        rdf.locale = this.locale
+        rdf.useNamedDateTimeStyle()
+        timeText = rdf.string(reminder.dueDate, this.now)
+
+      } else {
+        const df = new DateFormatter()
+        df.locale = this.locale
+
+        if (this.dateDiff(reminder.dueDate, this.now) == 0 && reminder.dueDateIncludesTime) { df.useNoDateStyle() }
+        else { df.useShortDateStyle() }
+
+        if (reminder.dueDateIncludesTime) { df.useShortTimeStyle() }
+        else { df.useNoTimeStyle() }
+
+        timeText = df.string(reminder.dueDate)
+      }
+
+      const timeStack = this.align(reminderStack)
+      const time = this.provideText(timeText, timeStack, this.format.eventTime)
+      timeStack.setPadding(0, this.padding, this.padding, this.padding)
+    }
+  },
+
+  // Display JSON TEXT.
+  async textx(column, input) {
+    if (!this.data.reminders) { await this.setupReminders() }
+    const reminderSettings = this.settings.reminders
+
+    if (this.data.reminders.length == 0) {
+      if (reminderSettings.noRemindersBehavior == "message" && this.localization.noRemindersMessage.length) { return this.provideText(this.localization.noRemindersMessage, column, this.format.noReminders, true) }
+      if (this[reminderSettings.noRemindersBehavior]) { return await this[reminderSettings.noRemindersBehavior](column) }
+    }
+
+    const reminderStack = column.addStack()
+    reminderStack.layoutVertically()
+    reminderStack.setPadding(0, 0, 0, 0)
+    const settingUrl = reminderSettings.url || ""
+    reminderStack.url = (settingUrl.length > 0) ? settingUrl : "shortcuts://run-shortcut?name=Aramark"
+
+    const numberOfReminders = this.data.reminders.length
+    const showListColor = reminderSettings.showListColor
+    const colorShape = showListColor.includes("circle") ? "circle" : "rectangle"
+
+    for (let i = 0; i < 1; i++) {
       const reminder = this.data.reminders[i]
 
       const titleStack = this.align(reminderStack)
