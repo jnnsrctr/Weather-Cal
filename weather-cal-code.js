@@ -1633,7 +1633,7 @@ const weatherCal = {
   },
   
   // Display Symbol+Link (forked from symbol).
-  symbol(column, name) {
+  symbolam(column, name) {
     if (!name || !SFSymbol.named(name)) { return }
 
     const symSettings = this.settings.symbolam || {}
