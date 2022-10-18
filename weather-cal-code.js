@@ -1134,7 +1134,15 @@ const weatherCal = {
         const hourText = hours>0 ? hours + this.localization.durationHour : ""
         const minuteText = minutes>0 ? minutes + this.localization.durationMinute : ""
         timeText += " \u2022 " + hourText + (hourText.length && minuteText.length ? " " : "") + minuteText
-      }
+        
+      } else if (eventSettings.showEventLength == "both") {
+        const duration = (event.endDate.getTime() - event.startDate.getTime()) / (1000*60)
+        const hours = Math.floor(duration/60)
+        const minutes = Math.floor(duration % 60)
+        const hourText = hours>0 ? hours + this.localization.durationHour : ""
+        const minuteText = minutes>0 ? minutes + this.localization.durationMinute : ""
+        timeText += "–" + this.formatTime(event.endDate) + " \u2022 " + hourText + (hourText.length && minuteText.length ? " " : "") + minuteText
+      } 
 
       const timeStack = this.align(currentStack)
       const time = this.provideText(timeText, timeStack, this.format.eventTime)
@@ -1232,8 +1240,11 @@ const weatherCal = {
       let fm = FileManager.iCloud()    
       let path = fm.bookmarkedPath("Shortcuts")  
       const stringx = fm.readString(path + "/globalvars.json")  
-      const jsonx = JSON.parse(stringx)  
-      const resultx = jsonx.aramark  
+      const jsonx = JSON.parse(stringx)
+      const result = jsonx.aramark
+      const ohnekomma = result.replace(',', '.')
+      const zweinks = parseFloat(ohnekomma).toFixed(2)
+      const resultx = zweinks.replace('.', ',')
       //const settingUrl = "shortcuts://run-shortcut?name=Aramark"
       // const title = this.provideText(reminder.title.trim(), titleStack, this.format.reminderTitle)
       const title = this.provideText(resultx + " €", titleStack, this.format.customText)
@@ -2243,7 +2254,7 @@ const weatherCal = {
           name: "Event length display style",
           description: "Choose whether to show the duration, the end time, or no length information.",
           type: "enum",
-          options: ["duration","time","none"],
+          options: ["duration","time","both","none"],
         }, 
         showLocation: {
           val: false,
