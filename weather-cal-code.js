@@ -102,7 +102,7 @@ const weatherCal = {
       exit: "Exit settings menu", 
     }
     const menuOptions = [menu.preview, menu.background, menu.preferences, menu.update, menu.share, menu.other, menu.exit]
-    const response = menuOptions[await this.generateAlert("Widget Setup",menuOptions)]
+    const response = menuOptions[await this.generateAlert("Widget Setup v0.7",menuOptions)]
 
     if (response == menu.preview) { return this.previewValue() } 
     if (response == menu.background) { return await this.setWidgetBackground() }
@@ -782,6 +782,7 @@ const weatherCal = {
 
       if (calendars.length && !(calendars.some(a => a.identifier == event.calendar.identifier) || calendars.includes(event.calendar.title))) { return false }
       if (event.title.startsWith("Canceled:")) { return false }
+      if (event.title.startsWith("EOWD")) { return false }
       if (event.isAllDay) { return eventSettings.showAllDay }
 
       // If they leave it blank, set minutes after to the duration of the event
@@ -1131,7 +1132,7 @@ const weatherCal = {
       const title = this.provideText(event.title.trim(), titleStack, this.format.eventTitle)
       const titlePadding = (showLocation || showTime) ? this.padding/5 : this.padding
       titleStack.setPadding(this.padding, this.padding, titlePadding, this.padding)
-      if (this.data.events.length >= 3) { title.lineLimit = 1 } // TODO: Make setting for this
+      if (this.data.events.length >= 1) { title.lineLimit = 1 } // TODO: Make setting for this
 
       if (showCalendarColor.length && showCalendarColor != "none" && showCalendarColor.includes("right")) {
         const colorItemText = " " + this.provideTextSymbol(colorShape)
@@ -1161,7 +1162,15 @@ const weatherCal = {
         const hourText = hours>0 ? hours + this.localization.durationHour : ""
         const minuteText = minutes>0 ? minutes + this.localization.durationMinute : ""
         timeText += " \u2022 " + hourText + (hourText.length && minuteText.length ? " " : "") + minuteText
-      }
+        
+      } else if (eventSettings.showEventLength == "both") {
+        const duration = (event.endDate.getTime() - event.startDate.getTime()) / (1000*60)
+        const hours = Math.floor(duration/60)
+        const minutes = Math.floor(duration % 60)
+        const hourText = hours>0 ? hours + this.localization.durationHour : ""
+        const minuteText = minutes>0 ? minutes + this.localization.durationMinute : ""
+        timeText += "–" + this.formatTime(event.endDate) + " \u2022 " + hourText + (hourText.length && minuteText.length ? " " : "") + minuteText
+      } 
 
       const timeStack = this.align(currentStack)
       const time = this.provideText(timeText, timeStack, this.format.eventTime)
@@ -1237,6 +1246,37 @@ const weatherCal = {
       const timeStack = this.align(reminderStack)
       const time = this.provideText(timeText, timeStack, this.format.eventTime)
       timeStack.setPadding(0, this.padding, this.padding, this.padding)
+    }
+  },
+
+  // Display JSON TEXT.
+  async textx(column, input) {
+    const textxSettings = this.settings.textx
+
+    const textxStack = column.addStack()
+    textxStack.layoutVertically()
+    textxStack.setPadding(0, 0, 0, 0)
+    const settingUrl = textxSettings.url || ""
+    textxStack.url = (settingUrl.length > 0) ? settingUrl : "shortcuts://run-shortcut?name=Aramark"
+
+       
+    for (let i = 0; i < 1; i++) {
+      
+      const titleStack = this.align(textxStack)
+      titleStack.layoutHorizontally()
+
+      let fm = FileManager.iCloud()    
+      let path = fm.bookmarkedPath("Shortcuts")  
+      const stringx = fm.readString(path + "/globalvars.json")  
+      const jsonx = JSON.parse(stringx)
+      const result = jsonx.aramark
+      const ohnekomma = result.replace(',', '.')
+      const zweinks = parseFloat(ohnekomma).toFixed(2)
+      const resultx = zweinks.replace('.', ',')
+      //const settingUrl = "shortcuts://run-shortcut?name=Aramark"
+      // const title = this.provideText(reminder.title.trim(), titleStack, this.format.reminderTitle)
+      const title = this.provideText(resultx + " €", titleStack, this.format.customText)
+      titleStack.setPadding(this.padding, this.padding, this.padding/5, this.padding)
     }
   },
 
@@ -1624,6 +1664,27 @@ const weatherCal = {
     
     const symbolStack = this.align(column)
     symbolStack.setPadding(topPad, leftPad, bottomPad, rightPad)
+
+    const symbol = symbolStack.addImage(SFSymbol.named(name).image)
+    const size = symSettings.size.length > 0 ? parseInt(symSettings.size) : column.size.width - (this.padding * 4)
+    symbol.imageSize = new Size(size, size)
+    if (symSettings.tintColor.length > 0) { symbol.tintColor = new Color(symSettings.tintColor) }
+  },
+  
+  // Display Symbol+Link (forked from symbol).
+  symbolam(column, name) {
+    if (!name || !SFSymbol.named(name)) { return }
+
+    const symSettings = this.settings.symbolam || {}
+    const symbolPad = symSettings.padding || {}
+    const topPad    = (symbolPad.top && symbolPad.top.length) ? parseInt(symbolPad.top) : this.padding
+    const leftPad   = (symbolPad.left && symbolPad.left.length) ? parseInt(symbolPad.left) : this.padding
+    const bottomPad = (symbolPad.bottom && symbolPad.bottom.length) ? parseInt(symbolPad.bottom) : this.padding
+    const rightPad  = (symbolPad.right && symbolPad.right.length) ? parseInt(symbolPad.right) : this.padding
+    
+    const symbolStack = this.align(column)
+    symbolStack.setPadding(topPad, leftPad, bottomPad, rightPad)  
+    symbolStack.url = "shortcuts://run-shortcut?name=Aramark"
 
     const symbol = symbolStack.addImage(SFSymbol.named(name).image)
     const size = symSettings.size.length > 0 ? parseInt(symSettings.size) : column.size.width - (this.padding * 4)
@@ -2221,7 +2282,7 @@ const weatherCal = {
           name: "Event length display style",
           description: "Choose whether to show the duration, the end time, or no length information.",
           type: "enum",
-          options: ["duration","time","none"],
+          options: ["duration","time","both","none"],
         }, 
         showLocation: {
           val: false,
@@ -2324,6 +2385,25 @@ const weatherCal = {
           name: "Use separate sunrise and sunset elements",
           description: "By default, the sunrise element changes between sunrise and sunset times automatically. Set to true for individual, hard-coded sunrise and sunset elements.",
           type: "bool",
+        },
+      },
+      textx: {
+        name: "TextX",
+        test1: {
+          val: "",
+          name: "Limit times displayed",
+          description: "Set how many minutes before/after sunrise or sunset to show this element. Leave blank to always show.",
+        }, 
+        test2: {
+          val: false,
+          name: "Use separate sunrise and sunset elements",
+          description: "By default, the sunrise element changes between sunrise and sunset times automatically. Set to true for individual, hard-coded sunrise and sunset elements.",
+          type: "bool",
+        }, 
+        url: {
+          val: "",
+          name: "URL to open when tapped",
+          description: "Optionally provide a URL to open when this item is tapped.",
         },
       },
       weather: {
@@ -2429,6 +2509,25 @@ const weatherCal = {
       },
       symbol: {
         name: "Symbols",
+        size: {
+          val: "18",
+          name: "Size",
+          description: "Size of each symbol. Leave blank to fill the width of the column.",
+        }, 
+        padding: {
+          val: { top: "", left: "", bottom: "", right: "" },
+          name: "Padding",
+          type: "multival",
+          description: "The padding around each symbol. Leave blank to use the default padding.",
+        },
+        tintColor: {
+          val: "ffffff",
+          name: "Tint color",
+          description: "The hex code color value to tint the symbols. Leave blank for the default tint.",
+        }, 
+      },
+      symbolam: {
+        name: "Symbol with link",
         size: {
           val: "18",
           name: "Size",
