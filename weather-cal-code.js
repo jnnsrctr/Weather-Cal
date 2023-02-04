@@ -102,7 +102,7 @@ const weatherCal = {
       exit: "Exit settings menu", 
     }
     const menuOptions = [menu.preview, menu.background, menu.preferences, menu.update, menu.share, menu.other, menu.exit]
-    const response = menuOptions[await this.generateAlert("Widget Setup",menuOptions)]
+    const response = menuOptions[await this.generateAlert("Widget Setup v0.7",menuOptions)]
 
     if (response == menu.preview) { return this.previewValue() } 
     if (response == menu.background) { return await this.setWidgetBackground() }
